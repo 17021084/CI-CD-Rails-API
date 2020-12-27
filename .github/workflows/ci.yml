@@ -1,0 +1,39 @@
+name: Rails CI 
+# chạy khi push và pull_request 
+on: [push, pull_request]
+jobs:
+  CI-test:
+    runs-on: ubuntu-latest # moi truong chay 
+    steps:
+      # clone repo va check out nhanh moi  
+      - uses: actions/checkout@v2
+      # set up ruby
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7.1
+      - name: Start MySql
+        run: sudo /etc/init.d/mysql start    
+      - name: Install bundle
+        run: sudo gem install bundler
+      - name: Update bundle
+        run: sudo gem update bundler 
+
+      # cache lại những cái dêp.. cho workflow nhanh hơn. vendor trong rail là thư muc chứa thư viện bên thứ 3 
+      # copy trên github đoc có .
+      - uses: actions/cache@v2
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-  
+
+      - name: Install bundler
+        # bundle install --help để đọc về option . (--jobs tải //) --retry là mất mạng thì retry mấy lần   
+        run: |
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+      #check convention voi best practices
+      - name: Rubocop
+        run: bundle exec rubocop -c .rubocop.yml
+      - name: Rails best practices
+        run: bundle exec rails_best_practices -e "db/schema.rb,db/migrate,vendor,app/models/application_record.rb" 
