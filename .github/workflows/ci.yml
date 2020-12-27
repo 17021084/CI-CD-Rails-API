@@ -36,4 +36,4 @@ jobs:
       - name: Rubocop
         run: bundle exec rubocop -c .rubocop.yml
       - name: Rails best practices
-        run: bundle exec rails_best_practices -e "db/schema.rb,db/migrate,vendor,app/models/application_record.rb" 
+        run: bundle exec rails_best_practices 
