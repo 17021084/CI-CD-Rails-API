@@ -1,0 +1,2 @@
+class Ball < ApplicationRecord
+end
